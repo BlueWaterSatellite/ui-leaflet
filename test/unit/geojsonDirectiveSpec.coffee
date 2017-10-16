@@ -1,10 +1,12 @@
 describe 'Directive: geojson', ->
-    leafletMapDefaults= leafletData = scope = $compile = $rootScope = digestor = null
+    leafletMapDefaults = leafletData = scope = $compile = $rootScope = $timeout = digestor = null
 
     beforeEach module('ui-leaflet')
 
-    beforeEach inject (_$compile_, _$rootScope_, _leafletData_, _leafletMapDefaults_, _digestor_) ->
+    beforeEach inject (_$compile_, _$rootScope_, _$timeout_, _leafletData_, _leafletMapDefaults_, _digestor_) ->
         $compile = _$compile_
+        $timeout = _$timeout_
+        window.ngLeafLetTestGlobals.$timeout = $timeout
         $rootScope = _$rootScope_
         leafletData = _leafletData_
         leafletMapDefaults = _leafletMapDefaults_
@@ -12,16 +14,9 @@ describe 'Directive: geojson', ->
         scope = $rootScope.$new()
 
     afterEach inject ($rootScope) ->
-        $rootScope.$apply()
+        #$rootScope.$apply()
 
-    it 'should not create a geoJSON tilelayer if a bad structure is provided', ->
-        angular.extend scope, geojson: {}
-        element = angular.element('<leaflet geojson="geojson"></leaflet>')
-        element = $compile(element)(scope)
-        leafletData.getGeoJSON().then (geoJSON) ->
-            expect(geoJSON).not.toBeDefined()
-
-    it 'should create a geoJSON tilelayer if a good structure is provided', ->
+    it 'should not create a geoJSON tilelayer if a bad structure is provided', (done) ->
         angular.extend scope, geojson:
             data:
                 'type': 'FeatureCollection'
@@ -56,9 +51,51 @@ describe 'Directive: geojson', ->
                 ]
         element = angular.element('<leaflet geojson="geojson"></leaflet>')
         element = $compile(element)(scope)
-        leafletData.getGeoJSON().then (geoJSON) ->
-            expect(geoJSON).toBeDefined()
-            expect(Object.keys(geoJSON._layers).length).toBe 3
+        @digest scope, ->
+            leafletData.getGeoJSON().then (geoJSON) ->
+                expect(geoJSON).toBeDefined()
+                done()
+
+    it 'should create a geoJSON tilelayer if a good structure is provided', (done) ->
+        angular.extend scope, geojson:
+            data:
+                'type': 'FeatureCollection'
+                'features': [
+                    {
+                        'type': 'Feature'
+                        'geometry':
+                            'type': 'Point'
+                            'coordinates': [102.0, 0.5]
+                        'properties':
+                            'prop0': 'value0'
+                    }
+                    {
+                        'type': 'Feature'
+                        'geometry':
+                            'type': 'LineString'
+                            'coordinates': [[102.0, 0.0], [103.0, 1.0], [104.0, 0.0], [105.0, 1.0]]
+                        'properties':
+                            'prop0': 'value0'
+                            'prop1': 0.0
+                    }
+                    {
+                        'type': 'Feature'
+                        'geometry':
+                            'type': 'Polygon'
+                            'coordinates': [[[100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0]]]
+                        'properties':
+                            'prop0': 'value0'
+                            'prop1':
+                                'this': 'that'
+                    }
+                ]
+        element = angular.element('<leaflet geojson="geojson"></leaflet>')
+        element = $compile(element)(scope)
+        @digest scope, ->
+            leafletData.getGeoJSON().then (geoJSON) ->
+                expect(geoJSON).toBeDefined()
+                expect(Object.keys(geoJSON._layers).length).toBe 3
+                done()
 
     it 'should remove the geoJSON layer from the map if geojson object removed from scope', ->
         angular.extend scope, geojson:
@@ -112,7 +149,7 @@ describe 'Directive: geojson', ->
         expect(leafletMap.hasLayer(leafletGeoJSON)).toBe false
 
     describe 'nested', ->
-        it 'should create a geoJSON tilelayer if a good structure is provided', ->
+        it 'should create a geoJSON tilelayer if a good structure is provided', (done) ->
             angular.extend scope, geojson:
                 one:
                     data:
@@ -159,12 +196,13 @@ describe 'Directive: geojson', ->
 
             element = angular.element('<leaflet geojson="geojson" geojson-nested="true"></leaflet>')
             element = $compile(element)(scope)
-
-            leafletData.getGeoJSON().then (geoJSON) ->
-                expect(geoJSON).toBeDefined()
-                expect(Object.keys(geoJSON).length).toBe 3
-                angular.forEach (lObject) ->
-                    expect(Object.keys(lObject._layers).length).toBe 1
+            @digest scope, ->
+                leafletData.getGeoJSON().then (geoJSON) ->
+                    expect(geoJSON).toBeDefined()
+                    expect(Object.keys(geoJSON).length).toBe 3
+                    angular.forEach (lObject) ->
+                        expect(Object.keys(lObject._layers).length).toBe 1
+                    done()
 
         it 'should remove the geoJSON layer from the map if geojson object removed from scope', ->
             angular.extend scope, geojson:

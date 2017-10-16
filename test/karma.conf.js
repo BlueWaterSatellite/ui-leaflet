@@ -8,6 +8,7 @@ module.exports = (karma) => {
 
         preprocessors: {
             'test/unit/**/*.coffee': ['coffee'],
+            'dist/src/**/*.js': ['coverage']
         },
         coffeePreprocessor: {
             options: {
@@ -20,20 +21,22 @@ module.exports = (karma) => {
         },
         // list of files / patterns to load in the browser
         files: [
+            'node_modules/phantomjs-polyfill/bind-polyfill.js',
             'bower_components/leaflet/dist/leaflet-src.js',
             'bower_components/angular/angular.js',
             'bower_components/angular-mocks/angular-mocks.js',
             'bower_components/angular-simple-logger/dist/angular-simple-logger.js', //THIS IS BROWSER version
             'bower_components/leaflet.markercluster/dist/leaflet.markercluster.js',
             'bower_components/leaflet.vector-markers/dist/leaflet-vector-markers.js',
+            'bower_components/leaflet-polylinedecorator/leaflet.polylineDecorator.js',
             mainLib,
             'test/unit/bootstrap.coffee',
+            'test/unit/*.js',
             'test/unit/**/*.js',
-            'test/unit/**/*.coffee',
-            'bower_components/Leaflet.PolylineDecorator/leaflet.polylineDecorator.js',
-            //do not include those specs for jasmine html runner by karma kama_jasmine_runner.html
-            {pattern:'test/**/**/*.coffee', included: false},
-            {pattern: 'dist/**/*.js.map', included: false}
+            'test/unit/**/*.coffee', {
+                pattern: 'dist/*.js.map',
+                included: false
+            }
         ],
         // Frameworks
         frameworks: ["jasmine"],
@@ -74,6 +77,10 @@ module.exports = (karma) => {
 
         // Continuous Integration mode
         // if true, it capture browsers, run tests and exit
-        singleRun: true
+        singleRun: true,
+
+        browserDisconnectTimeout: 2000,
+        browserDisconnectTolerance: 1,
+        browserNoActivityTimeout: 60000
     });
 };

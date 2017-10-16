@@ -32,7 +32,8 @@ module.exports =
 
     dwatch:[ 'fastbuild', 'concurrent:unit' ]
 
-    build:[ 'fastbuild', 'uglify', 'testunit', 'concat:license', 'clean:pre' ]
+    #build:[ 'fastbuild', 'uglify', 'testunit', 'concat:license', 'clean:pre' ]
+    build:[ 'fastbuild', 'uglify', 'concat:license', 'clean:pre' ]
 
     travis:[ 'fastbuild', 'bower:install', 'testunit' ]
 
