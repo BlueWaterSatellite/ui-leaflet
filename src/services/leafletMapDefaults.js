@@ -48,8 +48,11 @@ angular.module('ui-leaflet').factory('leafletMapDefaults', function ($q, leaflet
 
     // Get the _defaults dictionary, and override the properties defined by the user
     return {
-        reset: function () {
-           defaults = {};
+        reset: function (scopeId) {
+           if (!isDefined(scopeId)){
+                scopeId = 'main';
+           }
+           delete defaults[scopeId];
         },
         getDefaults: function (scopeId) {
             var mapId = obtainEffectiveMapId(defaults, scopeId);

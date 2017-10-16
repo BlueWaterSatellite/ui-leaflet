@@ -135,7 +135,7 @@ angular.module('ui-leaflet', ['nemLogging']).directive('leaflet',
             });
 
             scope.$on('$destroy', function () {
-                leafletMapDefaults.reset();
+                leafletMapDefaults.reset(attrs.id);
                 map.remove();
                 leafletData.unresolveMap(attrs.id);
             });
